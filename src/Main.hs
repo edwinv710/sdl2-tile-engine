@@ -7,13 +7,14 @@ import Control.Concurrent (threadDelay)
 import Foreign.C.Types
 import SDL.Vect
 import SDL (($=))
+import GameEngine
 import qualified TileEngine
 import qualified SDL
 
 screenWidth, screenHeight :: CInt
 (screenWidth, screenHeight) = (640, 480)
 
-createImage :: String -> SDL.Renderer -> IO TileEngine.Image
+createImage :: String -> SDL.Renderer -> IO Image
 createImage path renderer = do 
   surface <- SDL.loadBMP path
   size <- SDL.surfaceDimensions surface
@@ -21,7 +22,7 @@ createImage path renderer = do
   SDL.surfaceColorKey surface $= Just key
   texture <- SDL.createTextureFromSurface renderer surface
   SDL.freeSurface surface
-  return $ TileEngine.Image path texture size 
+  return $ Image path texture size 
 
 
 main :: IO ()
@@ -42,9 +43,9 @@ main = do
 
   timage     <- createImage "src/tilesheet.bmp" renderer
   let tileSet = TileEngine.tileset timage (32, 32)
-  let tileMap = TileEngine.genTileMap tileSet (20, 15) [ x + y | x <- [0..14], y <- [1..20]]
+  let tileMap = TileEngine.tileMap tileSet (20, 15) [ 1 | x <- [0..14], y <- [1..20]]
 
-  drawMap renderer tileMap
+  drawMap renderer tileMap 
 
   SDL.destroyRenderer renderer
   SDL.destroyWindow window
@@ -57,7 +58,7 @@ drawMap renderer tileMap = do
   SDL.rendererDrawColor renderer $= V4 maxBound maxBound maxBound maxBound
   SDL.clear renderer
 
-  TileEngine.renderMap renderer tileMap (0,0) 
+  TileEngine.renderMap renderer tileMap (-16,-16) 
 
   SDL.present renderer
   unless quit (drawMap renderer tileMap)
