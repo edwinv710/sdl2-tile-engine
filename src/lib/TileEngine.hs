@@ -1,6 +1,7 @@
 module TileEngine where
 
 import GHC.Int
+import System.IO
 import Control.Monad
 import Control.Concurrent (threadDelay)
 import Foreign.C.Types
@@ -8,26 +9,31 @@ import SDL.Vect
 import SDL.Time
 import SDL (($=))
 import GameEngine
+import Data.List
+import Data.List.Split (splitOn)
 import qualified SDL
 
 data Tile    = SurfaceTile { 
                              tilesetClip :: Maybe (SDL.Rectangle CInt),
                              mapClip     :: Maybe (SDL.Rectangle CInt),
-                             tileCoord   :: Coord
-                           }
+                             tileCoord   :: Coord }
 
-data Tileset = Tileset { 
-                         tilesetImage :: Image, 
-                         tileSize     :: Dimension, 
-                         tileClips    :: [Maybe (SDL.Rectangle CInt)] }
+data Tileset = Tileset     { 
+                             tilesetImage :: Image, 
+                             tileSize     :: Dimension, 
+                             tileClips    :: [Maybe (SDL.Rectangle CInt)] }
 
-data TileMap = TileMap { 
-                         mapTileset :: Tileset ,
-                         mapSize    :: Dimension,
-                         mapLst     :: [Tile]} 
+data Layer   = Layer       {
+                             layerTileset  :: Tileset,
+                             layerDimesion :: Dimension,
+                             layerTiles    :: [Tile]}
 
+data TileMap = TileMap     { layers :: [Layer] }
+
+{- Tile -}
 
 renderTile :: SDL.Renderer -> SDL.Texture -> Coord -> Tile -> IO ()
+renderTile _ _ _ (SurfaceTile Nothing _ _) = do return ()
 renderTile renderer texture offset (SurfaceTile tilesetClip mapClip _) = do
   let offsetTile =  offsetTileClip offset mapClip
   SDL.copy renderer texture tilesetClip offsetTile
@@ -36,30 +42,36 @@ offsetTileClip :: Coord -> Maybe (SDL.Rectangle CInt) ->  Maybe (SDL.Rectangle C
 offsetTileClip (xOff, yOff) (Just (SDL.Rectangle (P (V2 x y) ) (V2 w h))) =
   _sdlRect ( (x + xOff), (y + yOff) ) (w, h)
 
-renderTiles :: SDL.Renderer -> SDL.Texture -> Coord -> [Tile] -> IO ()
-renderTiles _ _ _ [] = do return ()
-renderTiles renderer texture offset (x:xs) = do 
-  renderTile renderer texture offset x  
-  renderTiles renderer texture offset xs  
-
-renderMap :: SDL.Renderer -> TileMap -> Coord -> IO ()
-renderMap renderer (TileMap (Tileset image tSize _) _ tiles) offset = do
-  let texture = imageTexture image
-  renderTiles renderer texture offset tiles
+generateLayer :: Tileset -> Dimension -> [Char] -> IO Layer
+generateLayer set@(Tileset img tsize c) msize path = do
+  handle <- openFile path ReadMode
+  contents <- hGetContents handle
+  let tiles = map (\x -> read x :: Int) $ (splitOn ",") . (intercalate ",") $ lines contents
+  return $ layer set msize tiles
   
-tileMap :: Tileset -> Dimension -> [Int] -> TileMap
-tileMap set@(Tileset img tsize c) msize xs = 
-  TileMap set msize $ generateMapTiles set tsize xs
+renderLayer :: SDL.Renderer -> Coord -> Layer -> IO ()
+renderLayer renderer offset (Layer (Tileset image tSize _) _ tiles) = do
+  let texture = imageTexture image
+  mapM_ (renderTile renderer texture offset) tiles  
+  
+renderMap :: SDL.Renderer -> TileMap -> Coord -> IO ()
+renderMap renderer (TileMap layers) offset = do
+  mapM_ (renderLayer renderer offset) layers  
+  
+layer :: Tileset -> Dimension -> [Int] -> Layer
+layer set@(Tileset img tsize c) msize xs = 
+  Layer set msize $ generateMapTiles set msize xs
 
 generateMapTiles :: Tileset -> Dimension -> [Int] -> [Tile]
 generateMapTiles set@(Tileset _ tsize@(twidth, theight) tclips) (width, _) nums =
   map tiles indexedNums where
     indexedNums = (zip [0..] nums) 
     tiles (i, n) = SurfaceTile  (clipFromTileset n set) (_clipFromCoord tsize (0,0) coord) coord where
-      coord = coordFromNum i 20
+      coord = coordFromNum i width 
 
 clipFromTileset :: Int -> Tileset -> Maybe (SDL.Rectangle CInt)
-clipFromTileset n tset = (tileClips tset) !! n
+clipFromTileset n tset | n >= 0    = (tileClips tset) !! n
+                       | otherwise = Nothing
 
 coordFromNum :: CInt -> CInt -> Coord 
 coordFromNum n w = ( n `mod` w, n `div` w)
@@ -70,7 +82,7 @@ tileset img tileDimension =
 
 _tilesetClips :: Image -> Dimension -> Coord -> [Maybe (SDL.Rectangle CInt)]
 _tilesetClips (Image _ _ (V2 width height)) (tileWidth, tileHeight) offset =
-  [ _clipFromCoord (tileWidth, tileHeight) offset (x, y) | x <- [0..xMax],  y <- [0..yMax]]  where
+  [ _clipFromCoord (tileWidth, tileHeight) offset (x, y) | y <- [0..yMax],  x <- [0..xMax]]  where
     xMax = width `div` tileWidth - 1
     yMax = height `div` tileHeight - 1
 

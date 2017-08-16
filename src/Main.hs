@@ -1,3 +1,4 @@
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
@@ -10,18 +11,20 @@ import SDL (($=))
 import GameEngine
 import qualified TileEngine
 import qualified SDL
+import qualified SDL.Image
 
 screenWidth, screenHeight :: CInt
 (screenWidth, screenHeight) = (640, 480)
 
 createImage :: String -> SDL.Renderer -> IO Image
 createImage path renderer = do 
-  surface <- SDL.loadBMP path
+  surface <- SDL.Image.load path
   size <- SDL.surfaceDimensions surface
   let key = V4 0 maxBound maxBound maxBound
   SDL.surfaceColorKey surface $= Just key
   texture <- SDL.createTextureFromSurface renderer surface
   SDL.freeSurface surface
+  putStrLn $ show size
   return $ Image path texture size 
 
 
@@ -41,27 +44,38 @@ main = do
         , SDL.rendererTargetTexture = False
         }
 
-  timage     <- createImage "src/tilesheet.bmp" renderer
-  let tileSet = TileEngine.tileset timage (32, 32)
-  let tileMap = TileEngine.tileMap tileSet (20, 15) [ 1 | x <- [0..14], y <- [1..20]]
+  timage     <- createImage "src/rpgtiles.png" renderer
+  let tileset = TileEngine.tileset timage (32, 32)
+  layer01 <- TileEngine.generateLayer tileset (40, 30)  "src/rpgmap_ground.csv"
+  layer02 <- TileEngine.generateLayer tileset (40, 30)  "src/rpgmap_object.csv"
+  let tileMap = TileEngine.TileMap [layer01, layer02]
 
-  drawMap renderer tileMap 
+  drawMap renderer tileMap (0,0)
 
   SDL.destroyRenderer renderer
   SDL.destroyWindow window
   SDL.quit
 
 
-drawMap renderer tileMap = do
+drawMap renderer tileMap (xPos, yPos) = do
   events <- SDL.pollEvents
   let quit = elem SDL.QuitEvent $ map SDL.eventPayload events
+  
   SDL.rendererDrawColor renderer $= V4 maxBound maxBound maxBound maxBound
   SDL.clear renderer
-
-  TileEngine.renderMap renderer tileMap (-16,-16) 
+  
+  TileEngine.renderMap renderer tileMap (xPos, yPos) 
+  
+  keyMap <- SDL.getKeyboardState
+  let (xOff, yOff) = 
+        if | keyMap SDL.ScancodeDown -> (0, -1)
+           | keyMap SDL.ScancodeUp -> (0, 1)
+           | keyMap SDL.ScancodeRight -> (-1, 0)
+           | keyMap SDL.ScancodeLeft -> (1, 0)
+           | otherwise -> (0,0)
 
   SDL.present renderer
-  unless quit (drawMap renderer tileMap)
+  unless quit (drawMap renderer tileMap ((xPos + xOff), (yPos + yOff)))
 
   {-
 data Tileset = Tileset { tilesetImage :: Image, tileSize :: MyPoint, tileClips :: [[SDL.Rectangle]] }
