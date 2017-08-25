@@ -15,9 +15,9 @@ sdlRect :: Coord -> Dimension -> Maybe (SDL.Rectangle CInt)
 sdlRect (x, y) (w, h) =
   Just $ SDL.Rectangle (P (V2 x y)) (V2 w h)
 
-sdlRectCoord :: Dimension -> Coord -> Coord -> Maybe (SDL.Rectangle CInt)
-sdlRectCoord (twidth, theight) (xOff, yOff) (x, y) =
-  sdlRect ((twidth * x + xOff), (theight * y + yOff)) (twidth, theight) 
+sdlRectCoord :: Dimension -> Coord -> Dimension -> Coord -> Maybe (SDL.Rectangle CInt)
+sdlRectCoord (twidth, theight) (xOff, yOff) (xs, ys) (x, y) =
+  sdlRect (( (twidth + xs) * x + xOff), ((theight + ys) * y + yOff)) (twidth, theight) 
 
 coordFromNum :: CInt -> CInt -> Coord 
 coordFromNum n w = ( n `mod` w, n `div` w)

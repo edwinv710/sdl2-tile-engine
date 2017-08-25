@@ -14,7 +14,7 @@ import qualified SDL
 import qualified SDL.Image
 
 screenWidth, screenHeight :: CInt
-(screenWidth, screenHeight) = (640, 480)
+(screenWidth, screenHeight) = (934, 700)
 
 createImage :: String -> SDL.Renderer -> IO Image
 createImage path renderer = do 
@@ -42,11 +42,11 @@ main = do
         , SDL.rendererTargetTexture = False
         }
 
-  timage <-     createImage "src/rpgtiles.png" renderer
-  let tileset = TileEngine.tileset timage (32, 32)
-  layer01 <-    TileEngine.fromCSV tileset (40, 30)  "src/rpgmap_ground.csv"
-  layer02 <-    TileEngine.fromCSV tileset (40, 30)  "src/rpgmap_object.csv"
-  let tileMap = [layer01, layer02]
+  timage <-     createImage "src/tiles_spritesheet_12.png" renderer
+  let tileset = TileEngine.tileset timage (70, 70) (2,2)
+  layer01 <-    TileEngine.fromCSV tileset (50, 10)  "src/sidescroller.csv"
+  {- layer02 <-    TileEngine.fromCSV tileset (40, 30)  "src/rpgmap_object.csv" -}
+  let tileMap = [layer01]
 
   drawMap renderer tileMap (0,0)
 
@@ -54,15 +54,17 @@ main = do
   SDL.destroyWindow window
   SDL.quit
 
-drawMap renderer layers oldPos = do
-  events <- SDL.pollEvents
-  let quit = elem SDL.QuitEvent $ map SDL.eventPayload events
-  
+renderMap renderer layers pos = do
   SDL.rendererDrawColor renderer $= V4 maxBound maxBound maxBound maxBound
   SDL.clear renderer
-  
-  mapM_ (TileEngine.renderLayer renderer oldPos) layers
-  
+  mapM_ (TileEngine.renderLayer renderer pos) layers
+  SDL.present renderer
+
+pollQuit = do
+  events <- SDL.pollEvents
+  return (elem SDL.QuitEvent $ map SDL.eventPayload events)
+
+pollMovement = do
   keyMap <- SDL.getKeyboardState
   let offset = 
         if | keyMap SDL.ScancodeDown -> (0, 1)
@@ -70,12 +72,14 @@ drawMap renderer layers oldPos = do
            | keyMap SDL.ScancodeRight -> (1, 0)
            | keyMap SDL.ScancodeLeft -> (-1, 0)
            | otherwise -> (0,0)
+  return offset
 
-  let pos = position oldPos offset (640, 480) $ layers !! 0
-
-  SDL.present renderer
- 
-  unless quit (drawMap renderer layers pos)
+drawMap renderer layers pos = do
+  renderMap renderer layers pos
+  quit <- pollQuit 
+  offset <- pollMovement
+  let newPos = position pos offset (640, 480) $ layers !! 0
+  unless quit $ drawMap renderer layers newPos
 
 position (xPos, yPos) (xOff, yOff) (screenWidth, screenHeight) layer = 
   newPosition topCorner (xPos, yPos) (value topCorner) $ value bottomCorner where

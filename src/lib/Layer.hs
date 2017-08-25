@@ -21,7 +21,7 @@ renderLayer renderer offset (TileLayer tileset _ tiles) = do
   mapM_ (renderTile renderer tileset offset) tiles  
 
 fromCSV :: Tileset -> Dimension -> [Char] -> IO Layer
-fromCSV set@(Tileset img tsize c) msize path = do
+fromCSV set msize path = do
   handle <- openFile path ReadMode
   contents <- hGetContents handle
   let tiles = map (\x -> read x :: Int) $ (splitOn ",") . (intercalate ",") $ lines contents
@@ -36,10 +36,10 @@ layer set msize xs =
   TileLayer set msize $ generateTiles set msize xs
 
 generateTiles :: Tileset -> Dimension -> [Int] -> [Tile]
-generateTiles set@(Tileset _ tsize _) (width, _) nums =
+generateTiles set@(Tileset _ tsize spacing _) (width, _) nums =
   map tiles indexedNums where
     indexedNums = (zip [0..] nums) 
-    tiles (i, n) = SurfaceTile  (Tileset.clip n set) (sdlRectCoord tsize (0,0) coord) coord n where
+    tiles (i, n) = SurfaceTile  (Tileset.clip n set) (sdlRectCoord tsize (0,0) (0,0) coord) coord n where
       coord = coordFromNum i width 
 
 generateEventTiles :: Dimension -> Dimension -> [Int] -> [Tile]
@@ -50,7 +50,7 @@ generateEventTiles size@(width, height) tsize xs =
 
 layerValue :: Coord -> Layer -> Maybe Int
 layerValue coord (EventLayer size tsize tiles) = _tileValue coord size tsize tiles 
-layerValue coord (TileLayer (Tileset _ tsize _ ) size tiles)  = _tileValue coord size tsize tiles 
+layerValue coord (TileLayer (Tileset _ tsize _ _ ) size tiles)  = _tileValue coord size tsize tiles 
 
 _tileValue :: Coord -> Dimension -> Dimension -> [Tile] -> Maybe Int
 _tileValue coord dimension tsize@(twidth, theight) tiles | 
