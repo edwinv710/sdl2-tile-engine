@@ -15,10 +15,20 @@ build-type:          Simple
 extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
+executable basic-example 
+  main-is:             Basic.hs
+  hs-source-dirs:      src src/lib src/examples
+  build-depends:       base >=4.9 && <4.10, sdl2, split, sdl2-image
+  default-language:    Haskell2010
+
+executable movement-example 
+  main-is:             Movement.hs
+  hs-source-dirs:      src src/lib src/examples
+  build-depends:       base >=4.9 && <4.10, sdl2, split, sdl2-image
+  default-language:    Haskell2010
+
 executable sdl2-example-game
   main-is:             Main.hs
-  -- other-modules:       
-  -- other-extensions:    
   build-depends:       base >=4.9 && <4.10, sdl2, split, sdl2-image
   hs-source-dirs:      src src/lib
   default-language:    Haskell2010

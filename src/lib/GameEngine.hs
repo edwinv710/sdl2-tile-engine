@@ -7,8 +7,7 @@ import qualified SDL
 type Dimension = (CInt, CInt)
 type Coord     = (CInt, CInt)
 
-data Image = Image { imagePath    :: String
-                   , imageTexture :: SDL.Texture 
+data Image = Image { imageTexture :: SDL.Texture 
                    , imageSize    :: (V2 CInt) }
 
 sdlRect :: Coord -> Dimension -> Maybe (SDL.Rectangle CInt)

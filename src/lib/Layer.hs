@@ -8,13 +8,12 @@ import Data.List
 import Data.List.Split (splitOn)
 import qualified SDL
 
-data Layer = TileLayer  { layerTileset       :: Tileset,
-                          layerDimesion      :: Dimension,
-                          layerTiles         :: [Tile]}
-
-           | EventLayer { layerDimension     :: Dimension,
-                          layerTileDimension :: Dimension,
-                          layerTiles         :: [Tile] }
+data Layer = TileLayer          { layerTileset       :: Tileset,
+                                  layerDimension      :: Dimension,
+                                  layerTiles         :: [Tile]}
+           | EventLayer         { layerDimension     :: Dimension,
+                                  layerTileDimension :: Dimension,
+                                  layerTiles         :: [Tile] }
 
 renderLayer :: SDL.Renderer -> Coord -> Layer -> IO ()
 renderLayer renderer offset (TileLayer tileset _ tiles) = do
@@ -49,8 +48,16 @@ generateEventTiles size@(width, height) tsize xs =
    tiles (i, n) = EventTile (coordFromNum i width) n where
 
 layerValue :: Coord -> Layer -> Maybe Int
-layerValue coord (EventLayer size tsize tiles) = _tileValue coord size tsize tiles 
-layerValue coord (TileLayer (Tileset _ tsize _ _ ) size tiles)  = _tileValue coord size tsize tiles 
+layerValue coord (EventLayer size tsize tiles) = 
+  _tileValue coord size (1,1) tiles 
+layerValue coord (TileLayer (Tileset _ tsize _ _ ) size tiles)  = 
+  _tileValue coord size (1,1) tiles 
+
+layerPValue :: Coord -> Layer -> Maybe Int
+layerPValue coord (EventLayer size tsize tiles) = 
+  _tileValue coord size tsize tiles 
+layerPValue coord (TileLayer (Tileset _ tsize _ _ ) size tiles)  = 
+  _tileValue coord size tsize tiles 
 
 _tileValue :: Coord -> Dimension -> Dimension -> [Tile] -> Maybe Int
 _tileValue coord dimension tsize@(twidth, theight) tiles | 

@@ -6,13 +6,12 @@ import Foreign.C.Types
 import SDL.Vect
 import qualified SDL
 
-data Tile = SurfaceTile { tileImgRect   :: Maybe (SDL.Rectangle CInt),
-                          tileRect  :: Maybe (SDL.Rectangle CInt),
-                          tileCoord :: Coord,
-                          tileValue :: Int } 
-          | EventTile   { 
-                          tileCoord :: Coord,
-                          tileValue :: Int }
+data Tile = SurfaceTile { tileImgRect :: Maybe (SDL.Rectangle CInt),
+                          tileRect    :: Maybe (SDL.Rectangle CInt),
+                          tileCoord   :: Coord,
+                          tileValue   :: Int } 
+          | EventTile   { tileCoord   :: Coord,
+                          tileValue   :: Int }
 
 -- Renders a tile from a given texture with the offset given.
 renderTile :: SDL.Renderer -> Tileset -> Coord -> Tile -> IO ()
