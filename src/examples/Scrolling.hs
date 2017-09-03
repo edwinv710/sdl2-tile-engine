@@ -15,7 +15,7 @@ import qualified SDL.Image
 screenWidth, screenHeight :: CInt
 (screenWidth, screenHeight) = (933, 698)
 
-data ScrollableLayer = SLayer TileEngine.Layer (CInt, CInt) (CInt, CInt)
+data ScrollableLayer = SLayer (CInt, CInt) (CInt, CInt) TileEngine.Layer
 
 createImage :: String -> SDL.Renderer -> IO TileEngine.Image
 createImage path renderer = do 
@@ -50,10 +50,10 @@ newCoordinate layer (sw, sh) (ox, oy) (x, y) =
     bottomCorner = TileEngine.layerPValue (x + sw, y + sh) layer
 
 renderLayer :: SDL.Renderer -> (CInt, CInt) -> ScrollableLayer -> IO ScrollableLayer 
-renderLayer renderer off (SLayer layer pos speed) = do
+renderLayer renderer off (SLayer pos speed layer) = do
   let npos = addTuple pos $ addTuple speed off 
   TileEngine.renderLayer renderer npos layer
-  return $ SLayer layer npos speed
+  return $ SLayer npos speed layer
 
 main :: IO ()
 main = do
@@ -75,14 +75,15 @@ main = do
   timage <-     createImage "src/examples/tiles_spritesheet_12.png" renderer
   let tileset = TileEngine.tileset (70, 70) (2,2) timage
 
-  mainLayer       <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_main.csv"
-  waterLayer      <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_scrolling_water.csv"
-  cloudsLayer     <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_scrolling_clouds.csv"
-  backgroundLayer <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_background_objects.csv"
+  layers <- mapM (TileEngine.fromCSV (50, 10) tileset) 
+    [ "src/examples/sidescroller_scrolling_clouds.csv"
+    , "src/examples/sidescroller_background_objects.csv"
+    , "src/examples/sidescroller_scrolling_water.csv"
+    , "src/examples/sidescroller_main.csv"]
 
-  let layers = [ SLayer cloudsLayer     (0,0) (1,0), SLayer backgroundLayer (0,0) (0,0), SLayer waterLayer      (0,0) (2,0), SLayer mainLayer       (0,0) (0,0)]
-
-  drawMap renderer layers (0,0)
+  let slayers = zipWith ($) [ SLayer (0,0) (1,0) , SLayer (0,0) (0,0) , SLayer (0,0) (2,0) , SLayer (0,0) (0,0) ] layers 
+    
+  drawMap renderer slayers (1,0)
 
   SDL.destroyRenderer renderer
   SDL.destroyWindow window

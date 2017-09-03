@@ -49,12 +49,11 @@ main = do
   timage <-     createImage "src/examples/tiles_spritesheet_12.png" renderer
   let tileset = TileEngine.tileset (70, 70) (2,2) timage
 
-  mainLayer       <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_main.csv"
-  waterLayer      <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_scrolling_water.csv"
-  cloudsLayer     <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_scrolling_clouds.csv"
-  backgroundLayer <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_background_objects.csv"
-
-  let layers = [cloudsLayer, backgroundLayer, waterLayer, mainLayer]
+  layers <- mapM (TileEngine.fromCSV (50, 10) tileset) 
+    [ "src/examples/sidescroller_scrolling_clouds.csv"
+    , "src/examples/sidescroller_background_objects.csv"
+    , "src/examples/sidescroller_scrolling_water.csv"
+    , "src/examples/sidescroller_main.csv"]
 
   drawMap renderer layers (0,0)
 

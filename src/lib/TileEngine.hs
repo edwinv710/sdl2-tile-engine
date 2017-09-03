@@ -51,14 +51,14 @@ function. The function allows you to import your standard comma-separated map la
 tile map editors like Tiled. 
 
 @
-layer <- TileEngine.fromCSV tileset (20, 15) "map/layer01.csv"
+layer <- TileEngine.fromCSV (20, 15) tileset "map/layer01.csv"
 @
 
 If you would like to pre-process your map layers, the `TileEngine.layer` method
 allows you create a layer by manually passing a list of Ints.
 
 @
-let layer = TileEngine.layer tileset (20, 15) vals
+let layer = TileEngine.layer (20, 15) tileset vals
 @
 
 To render a layer, use the `TileEngine.renderLayer` method. In addition to the layer that will be rendered, a 
@@ -71,7 +71,6 @@ renderLayer renderer (0,0) layer
 Dive Deeper:
 
 Examples can be found by visiting the project's github page <https://github.com/edwinv710/sdl2-tile-engine/tree/master/src/examples>
-
 -}
 
 module TileEngine (

@@ -30,12 +30,12 @@ renderLayer renderer offset (TileLayer tileset _ tiles) = do
   mapM_ (renderTile renderer tileset offset) tiles  
 
 -- | Creates a layer from the given path to the csv file.
-fromCSV :: Tileset -> Dimension -> [Char] -> IO Layer
-fromCSV set msize path = do
+fromCSV :: Dimension -> Tileset -> [Char] -> IO Layer
+fromCSV msize set path = do
   handle <- openFile path ReadMode
   contents <- hGetContents handle
   let tiles = map (\x -> read x :: Int) $ (splitOn ",") . (intercalate ",") $ lines contents
-  return $ layer set msize tiles
+  return $ layer msize set tiles
 
 -- | Returns a Layer using the EventLayer constructor. Event Layers do not have tilesets associated with them. The tile value can be used to perform an action.
 eventLayer :: Dimension -> Dimension -> [Int] -> Layer
@@ -43,8 +43,8 @@ eventLayer msize tsize xs =
   EventLayer msize tsize $ generateEventTiles tsize msize xs
 
 -- | Returns a Layer using the TileLayer constructor. 
-layer :: Tileset -> Dimension -> [Int] -> Layer
-layer set msize xs = 
+layer :: Dimension -> Tileset -> [Int] -> Layer
+layer msize set xs = 
   TileLayer set msize $ generateTiles set msize xs
 
 generateTiles :: Tileset -> Dimension -> [Int] -> [Tile]

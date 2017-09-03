@@ -1,7 +1,6 @@
-### TileEngine
+### SDL2TileEngine
 
-TileEngine is a multi-layered tile-map engine for the creation of games using Haskell's 
-SDL2 library (https://hackage.haskell.org/package/sdl2). 
+SDL2TileEngine is a multi-layered tile-map engine for the creation of games using Haskell's SDL2 library (https://hackage.haskell.org/package/sdl2). 
 
 #### Setup:
 
@@ -51,14 +50,14 @@ function. The function allows you to import your standard comma-separated map la
 tile map editors like Tiled. 
 
 ```haskell
-layer <- TileEngine.fromCSV tileset (20, 15) "map/layer01.csv"
+layer <- TileEngine.fromCSV (20, 15) tileset "map/layer01.csv"
 ```
 
 If you would like to pre-process your map layers, the `TileEngine.layer` method
 allows you create a layer by manually passing a list of Ints.
 
 ```haskell
-let layer = TileEngine.layer tileset (20, 15) vals
+let layer = TileEngine.layer (20, 15) tileset vals
 ```
 
 To render a layer, use the `TileEngine.renderLayer` method. In addition to the layer that will be rendered, a 
