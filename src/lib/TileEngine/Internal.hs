@@ -1,14 +1,25 @@
-module GameEngine where
+module TileEngine.Internal where
 
+import TileEngine.Shared
+
+import TileEngine.Shared
 import Foreign.C.Types
 import SDL.Vect
 import qualified SDL
 
-type Dimension = (CInt, CInt)
-type Coord     = (CInt, CInt)
+{-- Tile --}
+offsetClip :: Coord -> Maybe (SDL.Rectangle CInt) ->  Maybe (SDL.Rectangle CInt) 
+offsetClip (xOff, yOff) (Just (SDL.Rectangle (P (V2 x y) ) (V2 w h))) =
+  sdlRect ( (x - xOff), (y - yOff) ) (w, h)
 
-data Image = Image { imageTexture :: SDL.Texture 
-                   , imageSize    :: (V2 CInt) }
+{-- Tileset --}
+clips :: Image -> Dimension -> Dimension -> Coord -> [Maybe (SDL.Rectangle CInt)]
+clips (Image _ (V2 width height)) (tileWidth, tileHeight) spacing@(xSpacing, ySpacing) offset =
+  [ sdlRectCoord (tileWidth, tileHeight) offset spacing (x, y) | y <- [0..(yMax - 1)],  x <- [0..(xMax - 1)]]  where
+    xMax = CInt . round . foldr (/) 1 $ map fromIntegral [width,  tileWidth  + xSpacing]
+    yMax = CInt . round . foldr (/) 1 $ map fromIntegral [height, tileHeight + ySpacing]
+
+{-- Shared --}
 
 sdlRect :: Coord -> Dimension -> Maybe (SDL.Rectangle CInt)
 sdlRect (x, y) (w, h) =

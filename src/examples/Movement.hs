@@ -8,7 +8,6 @@ import Foreign.C.Types
 import SDL.Vect
 import SDL
 import SDL (($=))
-import GameEngine
 import qualified TileEngine
 import qualified SDL
 import qualified SDL.Image
@@ -68,7 +67,7 @@ main = do
         }
 
   timage <-     createImage "src/examples/tiles_spritesheet_12.png" renderer
-  let tileset = TileEngine.tileset timage (70, 70) (2,2)
+  let tileset = TileEngine.tileset (70, 70) (2,2) timage
 
   mainLayer       <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_main.csv"
   waterLayer      <- TileEngine.fromCSV tileset (50, 10)  "src/examples/sidescroller_scrolling_water.csv"

@@ -1,17 +1,17 @@
 module TileEngine (
     module TileEngine
-  , module Tileset
-  , module Tile
-  , module Layer
-  , module GameEngine
+  , module TileEngine.Tileset
+  , module TileEngine.Tile
+  , module TileEngine.Layer
+  , module TileEngine.Shared
   ) where
 
-import GameEngine (
+import TileEngine.Shared (
   Image(Image),
   imageTexture,
   imageSize)
 
-import Tileset (
+import TileEngine.Tileset (
   Tileset(Tileset), 
   tilesetImage, 
   tileSize, 
@@ -19,7 +19,7 @@ import Tileset (
   tileClips,
   tileset)
 
-import Layer (
+import TileEngine.Layer (
   Layer(
     TileLayer, 
     EventLayer
@@ -35,14 +35,13 @@ import Layer (
   layerValue,
   layerPValue)
 
-import Tile (
+import TileEngine.Tile (
   Tile(
     SurfaceTile, 
     EventTile
   ),
   tileImgRect,
   tileRect,
-  tileCoord,
   tileValue)
 
 import qualified SDL

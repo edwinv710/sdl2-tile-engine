@@ -3,8 +3,9 @@
 
 name:                sdl2-tile-engine
 version:             0.1.0.0
--- synopsis:            
--- description:         
+synopsis:            A Tile Engine for Haskell's SDL2 Library.
+description:         
+  This package contains a Tile Engine for Haskell's SDL2 library. The tile engine supports tilesets, multi-layered maps, and layer scrolling. 
 license:             BSD3
 license-file:        LICENSE
 author:              Edwin Velasquez
@@ -16,7 +17,8 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 Library
-  hs-source-dirs:      src src/lib src/examples
+  exposed-modules:     TileEngine
+  hs-source-dirs:      src src/lib
   build-depends:       base >=4.9 && <4.10, sdl2, split, sdl2-image
   default-language:    Haskell2010
 
@@ -36,10 +38,4 @@ executable scrolling-example
   main-is:             Scrolling.hs
   hs-source-dirs:      src src/lib src/examples
   build-depends:       base >=4.9 && <4.10, sdl2, split, sdl2-image
-  default-language:    Haskell2010
-
-executable sdl2-example-game
-  main-is:             Main.hs
-  build-depends:       base >=4.9 && <4.10, sdl2, split, sdl2-image
-  hs-source-dirs:      src src/lib
   default-language:    Haskell2010
