@@ -2,6 +2,10 @@
 
 SDL2 TileEngine is a multi-layered tile-map engine for the creation of games using Haskell's SDL2 library (https://hackage.haskell.org/package/sdl2). SDL2 Tile Engine also supports importing CSV layers supported by popular tile map editors like Tiled. 
 
+![](http://res.cloudinary.com/dqacnk0ea/image/upload/c_scale,w_480/Screen_Shot_2017-09-03_at_4.23.25_PM_hathbj.png)
+
+(Tileset created by Kenney.nl)
+
 #### Setup:
 
 Before jumping into writing code, there are a few pre-requisite. First and most obvious, 
